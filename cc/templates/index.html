@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Text-to-Speech Converter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1> Text-to-Speech Converter</h1>
+        
+        <textarea id="text-input" placeholder="Enter text here..." required></textarea>
+
+            <label for="speed">Speed:</label>
+            <select id="speed">
+                <option value="false">Normal</option>
+                <option value="true">Slow</option>
+            </select>
+        </div>
+
+        <button id="convert-btn">Convert to Speech</button>
+
+        <div class="audio-section" id="audio-container" style="display: none;">
+            <audio id="audio-player" controls></audio>
+            <a id="download-link" class="download-btn" download>Download Audio</a>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $("#convert-btn").click(function () {
+                let text = $("#text-input").val();
+                let language = $("#language").val();
+                let slow = $("#speed").val();
+
+                if (text.trim() === "") {
+                    alert("Please enter some text!");
+                    return;
+                }
+
+                $.ajax({
+                    url: "/convert",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ text: text, language: language, slow: slow }),
+                    success: function (response) {
+                        $("#audio-container").show();
+                        $("#audio-player").attr("src", response.audio_url);
+                        $("#download-link").attr("href", "/download/" + response.audio_url.split('/').pop());
+                    },
+                    error: function (xhr) {
+                        alert(xhr.responseJSON.error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
